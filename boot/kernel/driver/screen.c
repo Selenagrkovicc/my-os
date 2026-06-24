@@ -80,3 +80,28 @@ void backspace(void)
         set_cursor(cursor_offset);
     }
 }
+
+void print_hex_digit(unsigned char x)
+{
+    if (x < 10)
+        print_char('0' + x, -1, -1, 0);
+    else
+        print_char('A' + x - 10, -1, -1, 0);
+}
+
+void print_hex32(unsigned int value)
+{
+    print("0x");
+    for (int i = 28; i >= 0; i -= 4)
+        print_hex_digit((value >> i) & 0xF);
+}
+
+
+void clear_screen(void) {
+    volatile char *vidmem = (volatile char *)0xb8000;
+
+    for (int i = 0; i < 80 * 25; i++) {
+        vidmem[i * 2] = ' ';
+        vidmem[i * 2 + 1] = 0x0f;
+    }
+} 

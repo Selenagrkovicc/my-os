@@ -20,10 +20,13 @@ KERNEL_BIN       = $(BUILD_DIR)/kernel.bin
 KERNEL_DIS       = $(BUILD_DIR)/kernel.dis
 OS_IMAGE         = $(BUILD_DIR)/os-image.bin
 LINKER_SCRIPT    = linker.ld
+VIRTIO_IMG       = virtio-test.img
 
 # ==============================================================
 #  Flagovi
 # ==============================================================
+CC = gcc
+
 CFLAGS = -m32 -ffreestanding -fno-pic -fno-stack-protector -nostdlib \
 	-I$(KERNEL_DIR) -I$(DRIVER_DIR) -I$(CPU_DIR)
 
@@ -43,15 +46,24 @@ KERNEL_OBJS = \
 	$(BUILD_DIR)/irq.o \
 	$(BUILD_DIR)/irq_asm.o \
 	$(BUILD_DIR)/timer.o \
-	$(BUILD_DIR)/keyboard.o
+	$(BUILD_DIR)/keyboard.o \
+	$(BUILD_DIR)/shell.o \
+	$(BUILD_DIR)/pci.o \
+	$(BUILD_DIR)/virtio_blk.o \
+	$(BUILD_DIR)/disk.o \
+	$(BUILD_DIR)/storage.o
 
 # ==============================================================
 #  Default
 # ==============================================================
 all: $(OS_IMAGE)
 
-run: all
-	qemu-system-i386 -drive format=raw,file=$(OS_IMAGE)
+run: $(OS_IMAGE) $(VIRTIO_IMG)
+	qemu-system-i386 \
+	-machine pc \
+	-drive file=$(OS_IMAGE),format=raw,index=0,media=disk \
+	-drive file=$(VIRTIO_IMG),format=raw,if=none,id=vdisk \
+	-device virtio-blk-pci,disable-modern=on,drive=vdisk
 
 # ==============================================================
 #  Disk image
@@ -59,6 +71,9 @@ run: all
 $(OS_IMAGE): $(BOOT_BIN) $(KERNEL_BIN)
 	cat $^ > $@
 	truncate -s 1474560 $@
+
+$(VIRTIO_IMG):
+	dd if=/dev/zero of=$(VIRTIO_IMG) bs=1M count=16
 
 # ==============================================================
 #  Bootloader
@@ -90,43 +105,57 @@ $(BUILD_DIR)/interrupt.o: $(CPU_DIR)/interrupt.asm | $(BUILD_DIR)
 
 $(BUILD_DIR)/isr_asm.o: $(CPU_DIR)/isr.asm | $(BUILD_DIR)
 	nasm -f elf32 $< -o $@
-	
+
 $(BUILD_DIR)/irq_asm.o: $(CPU_DIR)/irq.asm | $(BUILD_DIR)
 	nasm -f elf32 $< -o $@
-
 
 # ==============================================================
 #  C fajlovi
 # ==============================================================
 $(BUILD_DIR)/kernel.o: $(KERNEL_DIR)/kernel.c | $(BUILD_DIR)
-	gcc $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/screen.o: $(DRIVER_DIR)/screen.c | $(BUILD_DIR)
-	gcc $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/low_level.o: $(KERNEL_DIR)/low_level.c | $(BUILD_DIR)
-	gcc $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/util.o: $(KERNEL_DIR)/util.c | $(BUILD_DIR)
-	gcc $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/idt.o: $(CPU_DIR)/idt.c | $(BUILD_DIR)
-	gcc $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/isr.o: $(CPU_DIR)/isr.c | $(BUILD_DIR)
-	gcc $(CFLAGS) -c $< -o $@
-	
+	$(CC) $(CFLAGS) -c $< -o $@
+
 $(BUILD_DIR)/pic.o: $(CPU_DIR)/pic.c | $(BUILD_DIR)
-	gcc $(CFLAGS) -c $< -o $@
-	
+	$(CC) $(CFLAGS) -c $< -o $@
+
 $(BUILD_DIR)/irq.o: $(CPU_DIR)/irq.c | $(BUILD_DIR)
-	gcc $(CFLAGS) -c $< -o $@
-	
+	$(CC) $(CFLAGS) -c $< -o $@
+
 $(BUILD_DIR)/timer.o: $(DRIVER_DIR)/timer.c | $(BUILD_DIR)
-	gcc $(CFLAGS) -c $< -o $@
-	
+	$(CC) $(CFLAGS) -c $< -o $@
+
 $(BUILD_DIR)/keyboard.o: $(DRIVER_DIR)/keyboard.c | $(BUILD_DIR)
-	gcc $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
+	
+$(BUILD_DIR)/shell.o: $(KERNEL_DIR)/shell.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/pci.o: $(DRIVER_DIR)/pci.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/virtio_blk.o: $(DRIVER_DIR)/virtio_blk.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+	
+$(BUILD_DIR)/disk.o: $(DRIVER_DIR)/disk.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/storage.o: $(KERNEL_DIR)/storage.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@	
 
 # ==============================================================
 #  Build folder
@@ -146,6 +175,9 @@ dis: $(KERNEL_DIS)
 #  Clean
 # ==============================================================
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -f $(BOOT_BIN) $(KERNEL_BIN) $(OS_IMAGE) $(BUILD_DIR)/*.o
 
-.PHONY: all run dis clean
+clean-disk:
+	rm -f $(VIRTIO_IMG)
+
+.PHONY: all run dis clean clean-disk

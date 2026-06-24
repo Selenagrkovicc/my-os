@@ -16,9 +16,9 @@ void init_timer(uint32_t frequency)
 void timer_callback(void) //svaki put kad stigne interupt on se poziva
 {
     t++;
-    //if (t % 100 == 0) { 
-    //    print(".");
-   // }
+    if (t % 100 == 0) { 
+       print(".");
+    }
 }
 
 uint32_t timer_get_t(void) 

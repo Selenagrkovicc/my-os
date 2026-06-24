@@ -1,6 +1,7 @@
 #include "keyboard.h"
 #include "screen.h"
 #include "../low_level.h"
+#include "../shell.h"
 
 #define KEYBOARD_DATA_PORT 0x60
 
@@ -27,23 +28,10 @@ void keyboard_callback(void)
     }
 
     if (scancode < sizeof(scancode_to_ascii)) {
-
         char c = scancode_to_ascii[scancode];
 
-        if (c == '\b') {
-
-        backspace();
-    } else if (c == '\t') {
-
-        print("    ");
-
-    } else if (c == '\n') {
-
-        print("\n");
-
-    } else if (c) {
-
-        print_char(c, -1, -1, 3);
-    }
+        if (c) {
+            shell_input(c);
+        }
     }
 }

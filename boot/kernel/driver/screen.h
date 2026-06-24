@@ -24,5 +24,9 @@ void print_char(char c, int col, int row, char attr);
 void print_at(char *msg, int col, int row);
 void print(char *msg);
 
+void print_hex_digit(unsigned char x);
+void print_hex32(unsigned int value);
+
+void clear_screen(void);
 
 #endif
