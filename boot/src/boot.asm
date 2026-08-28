@@ -1,13 +1,13 @@
-[org 0x7c00]                                ;sve pocinje 
-
+[org 0x7c00]                  ;ponasa se kao da je na adresi ovoj jer ga je bios stvarno stavio tu
+                              ;stavi bajtove na ovu adresu, tj prvih 512 bajtova kad nadje 0xaa55 i dalje nastavlja moj kod 
 start:
-    [bits 16]
+    [bits 16]                 ; racunar se uvek pokrece u 16bitnom modu
 
-    cli ; iskljucujem prekide
-
-    xor ax, ax                  ; ax = 0
+    cli                       ; iskljucujem prekide
+; sve segmente na nula
+    xor ax, ax                ; ax = 0
     mov ds, ax
-    mov es, ax
+    mov es, ax                ; es je nula
     mov ss, ax
     mov fs, ax
     mov gs, ax
@@ -17,22 +17,22 @@ start:
     mov bp, 0x9000
     mov sp, bp                ; postavljam stek sa sigurnu udaljenost da moze da raste
 
-    sti                         ; Ponovo uključi prekide
+    sti                       ; Ponovo uključi prekide
 
     mov bx, REALMODE_MSG      ; ispisi da smo u realnom modu
     call print_bx_string
 
 
-    call load_kernel
+    call load_kernel          
 
-   call switch_to_pm
+    call switch_to_pm       
 
 
 
 jmp $ ;beskonacna petlja
 
 
-%include "../print/print_bx_string.asm"           ; dodajem funkciju
+%include "../print/print_bx_string.asm"         
 %include "../data/data.asm"   
 %include "../disk/disk.asm"   
 %include "../protected_mode/gdt_start.asm" 
@@ -50,7 +50,7 @@ BEGIN_PM:
  
 
 
-    jmp KERNEL_OFFSET
+    jmp KERNEL_OFFSET ; sad skace na adresu na koju smo ucitali kernel
 
     jmp $ ;beskonacna petlja
 

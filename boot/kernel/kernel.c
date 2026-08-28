@@ -14,12 +14,11 @@ void main() {
 
     idt_init();
     init_timer(100);
-    void timer_callback(void);
+
     __asm__ __volatile__("sti");
 
     pci_scan();
-
-    //shell_init();
+    shell_init();
 
     while (1) {
         __asm__ __volatile__("hlt");

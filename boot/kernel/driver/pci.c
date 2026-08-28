@@ -3,62 +3,59 @@
 #include "pci.h"
 #include "screen.h"
 #include "../low_level.h"
-
-
-
 #include "virtio_blk.h"
-
 
 //konfigaracioni  prostor ima svaki pci uredjaj  preko njega os saznaje sta je taj uredjaj i kako da komunicira sa njim
 
 static unsigned int pci_config_read(unsigned char bus, unsigned char device, unsigned char function, unsigned char offset) { //Ova funkcija čita 32-bitni podatak iz PCI konfiguracionog prostora.
     unsigned int address;
 
-    address = ((unsigned int)bus << 16) //pci magistrala
-            | ((unsigned int)device << 11) // bira uredjaj na toj magistrali
-            | ((unsigned int)function << 8) //bira fju uredjaja
+    address = ((unsigned int)bus << 16) //stavi na prvo mesto pci magistralu
+            | ((unsigned int)device << 11) // stavi br uredjaja
+            | ((unsigned int)function << 8) //broj fje uredjaja
             | (offset & 0xFC) // bira koji registar citam 
             | 0x80000000; //ukljucuje PCI CONF ADRESU
 
-    port_long_out(PCI_CONFIG_ADDRESS, address);
-    return port_long_in(PCI_CONFIG_DATA); //CITAM PODATKE
+    port_long_out(PCI_CONFIG_ADDRESS, address); //salje na tu adresu na port
+    return port_long_in(PCI_CONFIG_DATA); //CITAM PODATKE sa porta
 }
 
-void pci_scan() {
-    print("PCI scan start...\n");
+void pci_scan() { //pretrazi sve uredjaje
+    // print("PCI scan start...\n");
 
     for (uint16_t bus = 0; bus < 256; bus++) { //do 256 magistrala
-    for (uint8_t device = 0; device < 32; device++) { //na svakoj gagistrali 32 uredjaja
+    for (uint8_t device = 0; device < 32; device++) { //na svakoj magistrali moze bitii 32 uredjaja
 
         uint8_t function = 0;
 
         uint32_t vendor_device = pci_config_read(bus, device, function, 0x00); //Čitaš prvi PCI registar na offsetu 0x00.
 
-        uint16_t vendor_id = vendor_device & 0xFFFF;
-        uint16_t device_id = (vendor_device >> 16) & 0xFFFF;
+        uint16_t vendor_id = vendor_device & 0xFFFF; //произвођач уређаја
+        uint16_t device_id = (vendor_device >> 16) & 0xFFFF; //конкретан уређај
 
         if (vendor_id == 0xFFFF) { //nma uredjaja
             continue;
         }
 
-        if (vendor_id == 0x1AF4) {  //BILO KOJI UREDJAJ
-            // ispis radi debug-ovanja
-            print("ID nadjenog virto uredjaja je: ");
+        if (vendor_id == 0x1AF4) {  //za virtio  moze i konzola, grafika, memorija....
+        
+            /*print("ID nadjenog virto uredjaja je: ");
             print_hex32(device_id);
-            print("\n");
+            print("\n");*/
 
             uint32_t bar0 = pci_config_read(bus, device, function, 0x10); //registar u PCI konfiguracionom prostoru koji sadrži adresu preko koje se pristupa uređaju.
+            //0x10 je prostor za bar0
             
-            // ispis radi debug-ovanja
+            /*ispis radi debug-ovanja
             print("BAR0="); //Base Address Register
             print_hex32(bar0);
-            print("\n");
+            print("\n");*/
 
             unsigned short io_base = bar0 & ~0x3; //u najnizim bitovim asu zastavice al brisem poslednja dva bita
 
-            print("IO BASE=");
+            /*print("IO BASE=");
             print_hex32(io_base); //baza svih virtio redistara
-            print("\n");
+            print("\n");*/
 
             if (device_id == 0x1001 || device_id == 0x1042) { //trazim virtio  blok device
 

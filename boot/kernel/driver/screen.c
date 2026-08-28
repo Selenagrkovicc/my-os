@@ -5,37 +5,37 @@
 int cursor_offset = 0;
 
 void print_char(char karakter, int col, int row, char opisni_bajt) {
-    unsigned char *vidmem = (unsigned char *)VIDEO_ADDRESS;
+    unsigned char *vidmem = (unsigned char *)VIDEO_ADDRESS; //pokazivac na video mem
 
-    if (!opisni_bajt) {
+    if (!opisni_bajt) { //ako nije data boja, belo i crno
         opisni_bajt = WHITE_ON_BLACK;
     }
 
     int offset;
 
-    if (col >= 0 && row >= 0) {
+    if (col >= 0 && row >= 0) { // ako sam dalal kolonu i red na njih ako ne onda ova obicna
         offset = get_screen_offset(col, row);
     } else {
         offset = cursor_offset;
     }
 
-    if (karakter == '\n') {
+    if (karakter == '\n') {// novi red, pomeri u novi red
         int rows = offset / (2 * MAX_COLS);
         offset = get_screen_offset(0, rows + 1);
     } else {
-        vidmem[offset] = karakter;
+        vidmem[offset] = karakter;  //ako je obican bajt ispisi njega i boju
         vidmem[offset + 1] = opisni_bajt;
         offset += 2;
     }
 
-    cursor_offset = offset;
+    cursor_offset = offset;  
     set_cursor(offset);
 }
 
-void print_at(char *message, int col, int row) {
+void print_at(char *message, int col, int row) { // odredjena pozicija
     if (col >= 0 && row >= 0) {
         cursor_offset = get_screen_offset(col, row);
-        set_cursor(cursor_offset);
+        set_cursor(cursor_offset); //pomeri kursor
     }
 
     int i = 0;
@@ -45,7 +45,7 @@ void print_at(char *message, int col, int row) {
     }
 }
 
-void print(char *message) {
+void print(char *message) { //ispisi
     print_at(message, -1, -1);
 }
 
@@ -58,7 +58,7 @@ int get_cursor() {
 }
 
 void set_cursor(int offset) {
-    offset /= 2;
+    offset /= 2; //hardverski kusor
 
     port_byte_out(REG_SCREEN_CTRL, 14);
     port_byte_out(REG_SCREEN_DATA, (unsigned char)(offset >> 8));
@@ -93,15 +93,19 @@ void print_hex32(unsigned int value)
 {
     print("0x");
     for (int i = 28; i >= 0; i -= 4)
-        print_hex_digit((value >> i) & 0xF);
+        print_hex_digit((value >> i) & 0xF); // pomeramo 4bita udesno delimo sa 16
 }
 
 
-void clear_screen(void) {
-    volatile char *vidmem = (volatile char *)0xb8000;
 
-    for (int i = 0; i < 80 * 25; i++) {
-        vidmem[i * 2] = ' ';
-        vidmem[i * 2 + 1] = 0x0f;
+void clear_screen(void) {
+    volatile char *vidmem = (volatile char *)VIDEO_ADDRESS;
+
+    for (int i = 0; i < MAX_ROWS * MAX_COLS; i++) {
+        vidmem[i * 2] = ' ';                 // obriši karakter
+        vidmem[i * 2 + 1] = WHITE_ON_BLACK;  // postavi boju
     }
-} 
+
+    cursor_offset = 0;   // vrati softverski kursor na početak
+    set_cursor(0);       // pomeri i hardverski VGA kursor na početak
+}

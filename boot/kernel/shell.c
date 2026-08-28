@@ -51,7 +51,7 @@ static void shell_execute(void) //poziva se kad enter pritisne
 
     } else if (str_equal(buffer, "save")) {
         print("SAVE KOMANDA PREPOZNATA\n");
-        storage_save_text("mina grkovic");
+        storage_save_text("Selena grkovic");
 
     } else if (str_equal(buffer, "load")) {
         print("LOAD KOMANDA PREPOZNATA\n");

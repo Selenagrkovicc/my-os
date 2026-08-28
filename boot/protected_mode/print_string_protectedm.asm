@@ -14,7 +14,7 @@ print_string_pm_loop:
     
     mov [edx], ax             ; Ispisujemo na ekran
     
-    inc ebx            ; Sledeći karakter u stringu
+    inc ebx                   ; Sledeći karakter u stringu
     add edx, 2                ; Sledeće mesto na ekranu
     jmp print_string_pm_loop  ; Ponovi petlju
 
