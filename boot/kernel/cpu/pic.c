@@ -3,19 +3,19 @@
 
 
 
-static void io_wait(void)
+static void io_wait(void) //pravi pauzu izmedju dve komande
 {
     port_byte_out(0x80, 0);
 }
 
-void PIC_sendEOI(uint8_t irq)
+void PIC_sendEOI(uint8_t irq) //kraj obrade
 {
     if (irq >= 8)
         port_byte_out(PIC2_COMMAND, PIC_EOI);
 
     port_byte_out(PIC1_COMMAND, PIC_EOI);
 }
-
+// remapiranje 
 void PIC_remap(int offset1, int offset2)
 {
     unsigned char a1;
@@ -41,7 +41,7 @@ void PIC_remap(int offset1, int offset2)
     port_byte_out(PIC2_DATA, ICW4_8086);
     io_wait();
 
-    port_byte_out(PIC1_DATA, a1);
+    port_byte_out(PIC1_DATA, a1); //vrati maske
     port_byte_out(PIC2_DATA, a2);
 }
 
@@ -51,7 +51,7 @@ void PIC_disable(void){
     port_byte_out(PIC2_DATA, 0xFF);
 }
 
-void IRQ_set_mask(uint8_t IRQline)
+void IRQ_set_mask(uint8_t IRQline) //iskljuvuje  irq
 {
     uint16_t port;
     uint8_t value;
@@ -67,7 +67,7 @@ void IRQ_set_mask(uint8_t IRQline)
     port_byte_out(port, value);
 }
 
-void IRQ_clear_mask(uint8_t IRQline)
+void IRQ_clear_mask(uint8_t IRQline) //opet salji
 {
     uint16_t port;
     uint8_t value;
@@ -93,12 +93,12 @@ static uint16_t __pic_get_irq_reg(int ocw3)
     return (port_byte_in(PIC2_COMMAND) << 8) | port_byte_in(PIC1_COMMAND);
 }
 
-uint16_t pic_get_irr(void)
+uint16_t pic_get_irr(void) //koji trazi prekide
 {
     return __pic_get_irq_reg(PIC_READ_IRR);
 }
 
-uint16_t pic_get_isr(void)
+uint16_t pic_get_isr(void) //koji rtren obradjuje
 {
     return __pic_get_irq_reg(PIC_READ_ISR);
 }

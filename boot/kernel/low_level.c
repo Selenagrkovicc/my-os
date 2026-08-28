@@ -1,38 +1,22 @@
-/*unsigned char port_byte_in(unsigned short port) {
-    unsigned char result;
-    __asm__("in %%dx, %%al" : "=a"(result) : "d"(port));
-    return result;
-}
-
-
-void port_byte_out(unsigned short port, unsigned char data) {
-    __asm__("out %%al, %%dx" : : "a"(data), "d"(port));
-}
-
-void port_word_in(unsigned short port) {
-    unsigned char result;
-    __asm__("in %%dx, %%ax" : "=a"(result) : "d"(port));
-}
-
-
-void port_word_out(unsigned short port, unsigned short data) {
-    __asm__("out %%ax, %%dx" : : "a"(data), "d"(port));
-}
-*/
-
 
 #include "low_level.h"
 
+// sluzi za komunikaciju instrukijama
+//prima broj porta, procitaj bajt odatle
 unsigned char port_byte_in(unsigned short port) {
     unsigned char result;
-    __asm__ volatile("inb %1, %0" : "=a"(result) : "Nd"(port));
-    return result;
+    __asm__ volatile( //asembler kod, nemoj da izbacis instrukciju ovu 
+        "inb %1, %0" //procitaj bajt sa porta b, port, rezultat
+        : "=a"(result) // reg al
+        : "Nd"(port)); // prosledi instrukciji
+    return result; //vracamo procitan bajt
 }
+
 
 void port_byte_out(unsigned short port, unsigned char data) {
-    __asm__ volatile("outb %0, %1" : : "a"(data), "Nd"(port));
+    __asm__ volatile("outb %0, %1" : : "a"(data), "Nd"(port)); //posalji, data, port
 }
-
+//16bitni
 unsigned short port_word_in(unsigned short port) {
     unsigned short result;
     __asm__ volatile("inw %1, %0" : "=a"(result) : "Nd"(port));
@@ -42,7 +26,7 @@ unsigned short port_word_in(unsigned short port) {
 void port_word_out(unsigned short port, unsigned short data) {
     __asm__ volatile("outw %0, %1" : : "a"(data), "Nd"(port));
 }
-
+//zbog pci 32bitni
 unsigned int port_long_in(unsigned short port) {
     unsigned int result;
     __asm__ volatile("inl %1, %0" : "=a"(result) : "Nd"(port));

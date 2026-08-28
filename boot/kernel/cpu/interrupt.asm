@@ -3,6 +3,6 @@
 global idt_load ;da mogu da je pozivam u c
 
 idt_load:
-    mov eax, [esp + 4] ;prvi argument
-    lidt [eax]
+    mov eax, [esp + 4] ;prvi argument zbog steka
+    lidt [eax] ;od sad se ova tabela koristi
     ret

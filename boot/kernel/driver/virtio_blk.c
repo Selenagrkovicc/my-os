@@ -50,10 +50,10 @@ void virtio_blk_init(unsigned short io_base) { //inicijalizuuje virtio blok ured
     }
 
 
-    print("virtqueu setting up...\n");
+    //print("virtqueu setting up...\n");
 
     port_word_out(io_base + VIRTIO_PCI_QUEUE_SELECT, 0); //queue broj 0  
-
+//kolko redova sadrzi
     unsigned short qsize = port_word_in(io_base + VIRTIO_PCI_QUEUE_SIZE); //kolko el queue podrzava
 
     /*print("Queue size=");

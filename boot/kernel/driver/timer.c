@@ -17,7 +17,7 @@ void timer_callback(void) //svaki put kad stigne interupt on se poziva
 {
     t++;
     if (t % 100 == 0) { 
-       print(".");
+       print("");
     }
 }
 

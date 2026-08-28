@@ -1,6 +1,6 @@
 #include "idt.h"
 #include "isr.h"
-#include "pic.h"
+#include "pic.h" 
 #include "irq.h"
 
 struct idt_entry idt[MESTA_ZA_INTERAPTE];  //pravim tabelu
@@ -12,7 +12,7 @@ void idt_set_gate(int n, unsigned int handler) {  //popunjavam mesta u tabeli
     idt[n].offset_low = handler & 0xFFFF;  //donje bajtove uzimam (hendler adresa fje koju treba da pozovem)
     idt[n].selector = KERNEL_CODE_SEGMENT; // sektor kernela
     idt[n].zero = 0; 
-    idt[n].type_attr = 0x8E; // 
+    idt[n].type_attr = 0x8E; 
     idt[n].offset_high = (handler >> 16) & 0xFFFF; //gornji bajtovi
 }
 
@@ -21,11 +21,12 @@ void idt_init() { //pravim idt
     idtp.base = (uint32_t)&idt; //definisem pocetak
 
     for (int i = 0; i < MESTA_ZA_INTERAPTE; i++) {
-        idt_set_gate(i, 0); //popunjava jedno mesto
+        idt_set_gate(i, 0); //popunjava jedno mesto NULAMA
     }
-    isr_install();
-     PIC_remap(0x20, 0x28);
-    irq_install();
-    idt_load((unsigned int)&idtp); //instrukcija da se sad ovo koristi
+
+    isr_install(); //MENJAM 32
+     PIC_remap(0x20, 0x28); // remapiram na lokaciju 0x20 je vektor 32 a na 0c28 vektor 40
+    irq_install(); 
+    idt_load((unsigned int)&idtp); //ASEMBLER
    
 }

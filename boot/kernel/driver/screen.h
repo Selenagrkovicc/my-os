@@ -1,13 +1,13 @@
 //======konstante=======
 
-#define VIDEO_ADDRESS 0xb8000
-#define MAX_ROWS 25
+#define VIDEO_ADDRESS 0xb8000 //  pocetak tekstualne memorije
+#define MAX_ROWS 25 
 #define MAX_COLS 80
 
-#define WHITE_ON_BLACK 0x0f
+#define WHITE_ON_BLACK 0x0f // 0 crna slova f bela pozadina 
 
-#define REG_SCREEN_CTRL 0x3D4
-#define REG_SCREEN_DATA 0X3D5
+#define REG_SCREEN_CTRL 0x3D4 // kontrolni / registarski port
+#define REG_SCREEN_DATA 0X3D5 // data port salje vr za taj registar 
 
 //=====funkcije=========
 
